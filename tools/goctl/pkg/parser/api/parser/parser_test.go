@@ -130,7 +130,7 @@ func TestParser_Parse_infoStmt(t *testing.T) {
 			"author":  `"type author here"`,
 			"email":   `"type email here"`,
 			"version": `"type version here"`,
-			"enable": `true`,
+			"enable":  `true`,
 			"disable": `false`,
 		}
 		p := New("foo.api", infoTestAPI)
@@ -763,6 +763,11 @@ func TestParser_Parse_service(t *testing.T) {
 							},
 							Request: &ast.BodyStmt{
 								LParen: ast.NewTokenNode(token.Token{Type: token.LPAREN, Text: "("}),
+								RParen: ast.NewTokenNode(token.Token{Type: token.RPAREN, Text: ")"}),
+							},
+							Returns: ast.NewTokenNode(token.Token{Type: token.IDENT, Text: "returns"}),
+							Response: &ast.BodyStmt{
+								LParen: ast.NewTokenNode(token.Token{Type: token.LPAREN, Text: "("}),
 								Body: &ast.BodyExpr{
 									Value: ast.NewTokenNode(token.Token{Type: token.IDENT, Text: "Foo"}),
 								},
@@ -1004,12 +1009,28 @@ func TestParser_Parse_service(t *testing.T) {
 	})
 }
 
+func TestParser_Parse_serviceWildcardPath(t *testing.T) {
+	input := `service gateway-api {
+		@handler ForwardGet
+		get /forward/*action (ForwardRequest) returns (ForwardReply)
+	}`
+
+	p := New("foo.api", input)
+	result := p.Parse()
+	assert.True(t, p.hasNoErrors())
+
+	stmt, ok := result.Stmts[0].(*ast.ServiceStmt)
+	assert.True(t, ok)
+	assert.Equal(t, "/forward/*action", stmt.Routes[0].Route.Path.Value.Token.Text)
+}
+
 func TestParser_Parse_pathItem(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		var testData = []struct {
 			input    string
 			expected string
 		}{
+			{input: "*action", expected: "*action"},
 			{input: "foo", expected: "foo"},
 			{input: "foo2", expected: "foo2"},
 			{input: "foo-bar", expected: "foo-bar"},
@@ -1044,6 +1065,7 @@ func TestParser_Parse_pathItem(t *testing.T) {
 
 	t.Run("invalid", func(t *testing.T) {
 		var testData = []string{
+			"*",
 			"-foo",
 			"foo-",
 			"foo-2",

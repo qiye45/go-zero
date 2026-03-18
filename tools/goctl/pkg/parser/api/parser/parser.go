@@ -396,12 +396,12 @@ func (p *Parser) parsePathExpr() *ast.PathExpr {
 		if p.peekTokenIs(token.LPAREN, token.Returns, token.AT_DOC, token.AT_HANDLER, token.SEMICOLON, token.RBRACE) {
 			break
 		}
-		if p.notExpectPeekTokenGotComment(p.curTokenNode().PeekFirstLeadingComment(), token.COLON, token.IDENT, token.INT) {
+		if p.notExpectPeekTokenGotComment(p.curTokenNode().PeekFirstLeadingComment(), token.COLON, token.MUL, token.IDENT, token.INT) {
 			return nil
 		}
 
-		// token ':' or IDENT
-		if p.notExpectPeekToken(token.COLON, token.IDENT, token.INT) {
+		// token ':', '*' or IDENT
+		if p.notExpectPeekToken(token.COLON, token.MUL, token.IDENT, token.INT) {
 			return nil
 		}
 
@@ -448,10 +448,18 @@ func (p *Parser) parsePathExpr() *ast.PathExpr {
 
 func (p *Parser) parsePathItem() []token.Token {
 	var list []token.Token
-	if !p.advanceIfPeekTokenIs(token.IDENT, token.INT) {
+	if !p.advanceIfPeekTokenIs(token.MUL, token.IDENT, token.INT) {
 		return nil
 	}
 	list = append(list, p.curTok)
+
+	if p.curTokenIs(token.MUL) {
+		if !p.advanceIfPeekTokenIs(token.IDENT) {
+			return nil
+		}
+
+		list = append(list, p.curTok)
+	}
 
 	for p.curTokenIsNotEof() &&
 		p.peekTokenIsNot(token.QUO, token.LPAREN, token.Returns, token.AT_DOC, token.AT_HANDLER, token.RBRACE, token.SEMICOLON, token.EOF) {

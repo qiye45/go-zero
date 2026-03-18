@@ -276,91 +276,93 @@ func (p *ApiParserParser) Path() (localctx IPathContext) {
 		}
 	}()
 
-	p.SetState(346)
-	p.GetErrorHandler().Sync(p)
-	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 38, p.GetParserRuleContext()) {
-	case 1:
-		p.EnterOuterAlt(localctx, 1)
-		p.SetState(341)
-		p.GetErrorHandler().Sync(p)
-		_la = p.GetTokenStream().LA(1)
+	// keep "/" as root path
+	if p.GetTokenStream().LA(1) == ApiParserParserT__11 {
+		_la = p.GetTokenStream().LA(2)
+		if _la != ApiParserParserT__5 && _la != ApiParserParserID && _la != ApiParserParserLetterOrDigit {
+			p.EnterOuterAlt(localctx, 2)
+			{
+				p.SetState(348)
+				p.Match(ApiParserParserT__11)
+			}
+			return localctx
+		}
+	}
 
-		for ok := true; ok; ok = _la == ApiParserParserT__11 || _la == ApiParserParserT__12 {
-			p.SetState(341)
-			p.GetErrorHandler().Sync(p)
-
-			switch p.GetTokenStream().LA(1) {
-			case ApiParserParserT__11:
-				{
-					p.SetState(326)
-					p.Match(ApiParserParserT__11)
-				}
-
+	p.EnterOuterAlt(localctx, 1)
+	parsed := false
+	for {
+		switch p.GetTokenStream().LA(1) {
+		case ApiParserParserT__11:
+			{
+				p.SetState(326)
+				p.Match(ApiParserParserT__11)
+			}
+			_la = p.GetTokenStream().LA(1)
+			switch _la {
+			case ApiParserParserT__5:
 				{
 					p.SetState(327)
+					p.Match(ApiParserParserT__5)
+				}
+				{
+					p.SetState(328)
 					p.PathItem()
 				}
-				p.SetState(332)
+			case ApiParserParserID, ApiParserParserLetterOrDigit:
+				{
+					p.SetState(329)
+					p.PathItem()
+				}
+				p.SetState(334)
 				p.GetErrorHandler().Sync(p)
 				_la = p.GetTokenStream().LA(1)
-
 				for _la == ApiParserParserT__10 {
 					{
-						p.SetState(328)
+						p.SetState(330)
 						p.Match(ApiParserParserT__10)
 					}
 					{
-						p.SetState(329)
+						p.SetState(331)
 						p.PathItem()
 					}
-
-					p.SetState(334)
+					p.SetState(336)
 					p.GetErrorHandler().Sync(p)
 					_la = p.GetTokenStream().LA(1)
 				}
-
-			case ApiParserParserT__12:
-				{
-					p.SetState(335)
-					p.Match(ApiParserParserT__12)
-				}
-
-				{
-					p.SetState(336)
-					p.PathItem()
-				}
-				p.SetState(339)
-				p.GetErrorHandler().Sync(p)
-				_la = p.GetTokenStream().LA(1)
-
-				if _la == ApiParserParserT__10 {
-					{
-						p.SetState(337)
-						p.Match(ApiParserParserT__10)
-					}
-					{
-						p.SetState(338)
-						p.PathItem()
-					}
-
-				}
-
 			default:
 				panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
 			}
-
-			p.SetState(343)
+			parsed = true
+		case ApiParserParserT__12:
+			{
+				p.SetState(338)
+				p.Match(ApiParserParserT__12)
+			}
+			{
+				p.SetState(339)
+				p.PathItem()
+			}
+			p.SetState(342)
 			p.GetErrorHandler().Sync(p)
 			_la = p.GetTokenStream().LA(1)
+			if _la == ApiParserParserT__10 {
+				{
+					p.SetState(340)
+					p.Match(ApiParserParserT__10)
+				}
+				{
+					p.SetState(341)
+					p.PathItem()
+				}
+			}
+			parsed = true
+		default:
+			if !parsed {
+				panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
+			}
+			return localctx
 		}
-
-	case 2:
-		p.EnterOuterAlt(localctx, 2)
-		{
-			p.SetState(345)
-			p.Match(ApiParserParserT__11)
-		}
-
 	}
 
 	return localctx

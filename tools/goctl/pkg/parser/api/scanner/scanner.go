@@ -54,6 +54,9 @@ func (s *Scanner) NextToken() (token.Token, error) {
 		case '/':
 			return s.scanLineComment(), nil
 		case '*':
+			if s.isPathWildcardToken() && !s.hasDocumentCloserAhead() {
+				return s.newToken(token.QUO), nil
+			}
 			return s.scanDocument()
 		default:
 			return s.newToken(token.QUO), nil
@@ -146,6 +149,58 @@ func (s *Scanner) peekRune() rune {
 		return 0
 	}
 	return s.data[s.readPosition]
+}
+
+func (s *Scanner) peekNthRune(offset int) rune {
+	position := s.readPosition + offset
+	if position >= s.size {
+		return 0
+	}
+
+	return s.data[position]
+}
+
+func (s *Scanner) isPathWildcardToken() bool {
+	if s.position == 0 {
+		return false
+	}
+
+	if !s.hasSlashInCurrentSegment() {
+		return false
+	}
+
+	prev := s.data[s.position-1]
+	if !s.isIdentifierLetter(prev) && !s.isDigit(prev) && prev != ':' {
+		return false
+	}
+
+	next := s.peekNthRune(1)
+	return s.isIdentifierLetter(next)
+}
+
+func (s *Scanner) hasSlashInCurrentSegment() bool {
+	for i := s.position - 1; i >= 0; i-- {
+		r := s.data[i]
+		if r == ' ' || r == '\t' || r == '\r' || r == '\f' || r == '\v' || r == '\n' {
+			return false
+		}
+
+		if r == '/' {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *Scanner) hasDocumentCloserAhead() bool {
+	for i := s.readPosition + 1; i < s.size; i++ {
+		if s.data[i-1] == '*' && s.data[i] == '/' {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (s *Scanner) scanString(delim rune, tp token.Type) (token.Token, error) {

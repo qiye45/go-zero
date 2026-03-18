@@ -255,6 +255,25 @@ func TestScanner_NextToken_invalid_document(t *testing.T) {
 	}
 }
 
+func TestScanner_NextToken_pathWildcard(t *testing.T) {
+	var testData = []token.Token{
+		{Type: token.QUO, Text: "/", Position: token.Position{Filename: "foo.api", Line: 1, Column: 1}},
+		{Type: token.IDENT, Text: "forward", Position: token.Position{Filename: "foo.api", Line: 1, Column: 2}},
+		{Type: token.QUO, Text: "/", Position: token.Position{Filename: "foo.api", Line: 1, Column: 9}},
+		{Type: token.MUL, Text: "*", Position: token.Position{Filename: "foo.api", Line: 1, Column: 10}},
+		{Type: token.IDENT, Text: "action", Position: token.Position{Filename: "foo.api", Line: 1, Column: 11}},
+		token.EofToken,
+	}
+
+	s, err := NewScanner("foo.api", "/forward/*action")
+	assert.NoError(t, err)
+	for _, expected := range testData {
+		actual, err := s.NextToken()
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	}
+}
+
 func TestScanner_NextToken_operator(t *testing.T) {
 	var testData = []token.Token{
 		{
